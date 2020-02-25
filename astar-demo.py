@@ -1,7 +1,18 @@
+import osmnx as ox
 import networkx as nx
 import math
 from astar import astar_path
 
+# Euclidean heuristic
+def heuristic(node1, node2):
+    # compute the Euclidean distance between node1 and node2
+    x1 = nx.get_node_attributes(G, 'attr_dict')[node1]['x']
+    y1 = nx.get_node_attributes(G, 'attr_dict')[node1]['y']
+    x2 = nx.get_node_attributes(G, 'attr_dict')[node2]['x']
+    y2 = nx.get_node_attributes(G, 'attr_dict')[node2]['y']
+    return math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))
+
+# write demo records to a file
 def write_pushed_nodes(output_file, variable_name, pushed_nodes, path_variable, path):
     with open(output_file, 'w') as file:
         file.write('var '+variable_name+'=[\n')
@@ -45,49 +56,21 @@ for u,v,data in MG_projected.edges(data=True):
         G.add_edge(u, v, osmid=data['osmid'], highway=data['highway'], length=data['length'])
 
 # find the shortest path from an east location to Lewis
-source=[41.590134, -88.115686] # A location eastern to Lewis
-destination = [41.605080, -88.080890] # A location in Lewis
-min_source_dist = 999999
-min_destination_dist = 999999
-source_node = None
-destination_node = None
-for node in G.nodes():
-    lat = nx.get_node_attributes(G, 'attr_dict')[node]['lat']
-    lon = nx.get_node_attributes(G, 'attr_dict')[node]['lon']
-    source_dist = math.sqrt((source[0]-lat)*(source[0]-lat) + (source[1]-lon)*(source[1]-lon))
-    if source_dist < min_source_dist:
-        source_node = node
-        min_source_dist = source_dist
-    destination_dist = math.sqrt((destination[0]-lat)*(destination[0]-lat) + (destination[1]-lon)*(destination[1]-lon))
-    if destination_dist < min_destination_dist:
-        destination_node = node
-        min_destination_dist = destination_dist
-
-path, pushed_nodes, dijkstra_dist = astar_path(G, source_node, destination_node, weight='length')
+# A location eastern to Lewis
+source_node = 504599581 # 41.590134, -88.115686
+# A location in Lewis
+destination_node = 5126987679 # 41.605080, -88.080890
+path, pushed_nodes = astar_path(G, source_node, destination_node, weight='length')
 write_pushed_nodes('east_dijkstra_nodes.js', 'east_dijkstra_nodes', pushed_nodes, 'east_dijkstra_path', path)
-path, pushed_nodes, astar_dist = astar_path(G, source_node, destination_node, heuristic=heuristic, weight='length')
+path, pushed_nodes = astar_path(G, source_node, destination_node, heuristic=heuristic, weight='length')
 write_pushed_nodes('east_astar_nodes.js', 'east_astar_nodes', pushed_nodes, 'east_astar_path', path)
 
 # find the shortest path from a west location to Lewis
-source = [41.597274, -88.048803] # A location western to Lewis
-destination = [41.605080, -88.080890] # A location in Lewis
-min_source_dist = 999999
-min_destination_dist = 999999
-source_node = None
-destination_node = None
-for node in G.nodes():
-    lat = nx.get_node_attributes(G, 'attr_dict')[node]['lat']
-    lon = nx.get_node_attributes(G, 'attr_dict')[node]['lon']
-    source_dist = math.sqrt((source[0]-lat)*(source[0]-lat) + (source[1]-lon)*(source[1]-lon))
-    if source_dist < min_source_dist:
-        source_node = node
-        min_source_dist = source_dist
-    destination_dist = math.sqrt((destination[0]-lat)*(destination[0]-lat) + (destination[1]-lon)*(destination[1]-lon))
-    if destination_dist < min_destination_dist:
-        destination_node = node
-        min_destination_dist = destination_dist
-
-path, pushed_nodes, dijkstra_dist = astar_path(G, source_node, destination_node, weight='length')
+# A location western to Lewis
+source_node = 237525410 # 41.597274, -88.048803
+# A location in Lewis
+destination_node = 5126987679 # 41.605080, -88.080890
+path, pushed_nodes = astar_path(G, source_node, destination_node, weight='length')
 write_pushed_nodes('west_dijkstra_nodes.js', 'west_dijkstra_nodes', pushed_nodes, 'west_dijkstra_path', path)
-path, pushed_nodes, astar_dist = astar_path(G, source_node, destination_node, heuristic=heuristic, weight='length')
+path, pushed_nodes = astar_path(G, source_node, destination_node, heuristic=heuristic, weight='length')
 write_pushed_nodes('west_astar_nodes.js', 'west_astar_nodes', pushed_nodes, 'west_astar_path', path)
