@@ -44,6 +44,10 @@ NetworkX is distributed with the 3-clause BSD license.
    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
+import networkx as nx
+from heapq import heappush, heappop
+from itertools import count
+
 def astar_path(G, source, target, heuristic=None, weight='weight'):
     """Returns a list of nodes in a shortest path between source and target
     using the A* ("A-star") algorithm.
@@ -158,3 +162,12 @@ def astar_path(G, source, target, heuristic=None, weight='weight'):
             pushed_nodes.append(neighbor)
 
     raise nx.NetworkXNoPath("Node %s not reachable from %s" % (source, target))
+
+# Euclidean heuristic
+def heuristic(node1, node2):
+    # compute the Euclidean distance between node1 and node2
+    x1 = nx.get_node_attributes(G, 'attr_dict')[node1]['x']
+    y1 = nx.get_node_attributes(G, 'attr_dict')[node1]['y']
+    x2 = nx.get_node_attributes(G, 'attr_dict')[node2]['x']
+    y2 = nx.get_node_attributes(G, 'attr_dict')[node2]['y']
+    return math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))
