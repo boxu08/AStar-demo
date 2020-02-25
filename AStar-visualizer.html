@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+	
+	<title>Quick Start - Leaflet</title>
+
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js" integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==" crossorigin=""></script>
+	<script src="east_dijkstra_nodes.js"></script>
+	<script src="east_astar_nodes.js"></script>
+	<script src="west_dijkstra_nodes.js"></script>
+	<script src="west_astar_nodes.js"></script>
+</head>
+<body>
+
+
+
+<div id="mapid" style="width: 1920; height: 1080px;"></div>
+<script>
+	var mymap = L.map('mapid').setView([41.586817, -88.066988], 14);
+	L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+      }).addTo(mymap);
+	
+	createButtons();
+	
+	var showedNodes = [];
+	var showedPath = []
+	
+	east_source_location = east_astar_path[0]
+	west_source_location = west_astar_path[0]
+	destination_location = east_astar_nodes[east_astar_nodes.length-1]
+	
+	// put source markers
+	L.marker(east_source_location).addTo(mymap)
+	L.marker(west_source_location).addTo(mymap)
+	
+	// put destination marker
+	var finish_flag = L.icon({iconUrl: 'finish_flag.png', iconSize: [40,40]});
+	L.marker(destination_location, {icon:finish_flag}).addTo(mymap);
+	
+	function createButtons() {
+		var legend = L.control({position: 'topright'});
+		legend.onAdd = function (mymap) {
+			var div = L.DomUtil.create('div', 'Algorithm');
+			div.innerHTML = '<button type="button" onclick="showEastDijkstra()">Dijkstra (from east source)</button><button type="button" onclick="showEastAStar()">A* (from east source)</button><button type="button" onclick="showWestDijkstra()">Dijkstra (from west source)</button><button type="button" onclick="showWestAStar()">A* (from west source)</button><button type="button" onclick="showInstantly()">Instant Display</button>';
+			return div;
+		};
+		legend.addTo(mymap)
+	}
+
+	function clearNodes() {
+		for (var i = 0; i < showedNodes.length; i++) {
+			mymap.removeLayer(showedNodes[i]);
+		}
+		showedNodes = [];
+	}
+	
+	function clearPath() {
+		for (var i = 0; i < showedPath.length; i++) {
+			mymap.removeLayer(showedPath[i]);
+		}
+		showedPath = [];
+	}
+	
+	function showEastDijkstra() {
+		clearNodes();
+		clearPath();
+		showNodes(east_dijkstra_nodes, 1, 10, '#3388ff', east_dijkstra_path);
+	}
+	
+	function showEastAStar() {
+		clearPath();
+		showNodes(east_astar_nodes, 10, 15, 'red', east_astar_path);
+	}
+	
+	function showWestDijkstra() {
+		clearNodes();
+		clearPath();
+		showNodes(west_dijkstra_nodes, 1, 10, '#3388ff', west_dijkstra_path);
+	}
+	
+	function showWestAStar() {
+		clearPath();
+		showNodes(west_astar_nodes, 10, 15, 'red', west_astar_path);
+	}
+	
+	var instant_show = false
+	function showInstantly() {
+	    instant_show = true;
+	}
+	
+	async function showNodes(nodes, delay, size, color, path){
+	    instant_show = false
+		for (var i = 0; i < nodes.length; i++) {
+			node = nodes[i];
+			circle = L.circle([node[0], node[1]], {radius: size, color: color});
+			circle.addTo(mymap);
+			showedNodes.push(circle);
+			if (!instant_show) 
+				await new Promise(r => setTimeout(r, delay));
+		}
+		for (var i = 0; i < path.length - 1; i++) {
+		    var latlngs = [path[i], path[i+1]];
+			var line = L.polyline(latlngs, {color: 'green', weight:5}).addTo(mymap);
+			showedPath.push(line);
+		}
+	}
+
+</script>
+
+
+</body>
+</html>
