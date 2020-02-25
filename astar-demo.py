@@ -1,5 +1,6 @@
 import networkx as nx
 import math
+from astar import astar_path
 
 def write_pushed_nodes(output_file, variable_name, pushed_nodes, path_variable, path):
     with open(output_file, 'w') as file:
